@@ -239,7 +239,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
 知识库检索结果：
 {context_text or "没有检索到相关知识。"}
 
-请基于这些材料回答。"""
+请基于这些材料回答，控制在 500 字以内，必须完整收尾。"""
 
     def make_request(selected_model: str) -> request.Request:
         payload = {
@@ -248,7 +248,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "max_tokens": 700,
+            "max_tokens": 1000,
         }
         return request.Request(
             f"{base_url}/chat/completions",
