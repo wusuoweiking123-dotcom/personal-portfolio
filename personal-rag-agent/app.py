@@ -163,20 +163,46 @@ def retrieve(query: str, docs: list[dict[str, Any]], top_k: int = 5) -> list[dic
     ]
 
 
+MODEL_ALIASES = {
+    "kimi-k3": "kimi-k2.6",
+    "kimi-k2": "kimi-k2.6",
+}
+
+
+def normalize_model_name(model: str | None) -> str:
+    clean = (model or "").strip()
+    return MODEL_ALIASES.get(clean, clean)
+
+
+def ordered_model_candidates() -> list[str]:
+    preferred = normalize_model_name(os.getenv("OPENAI_MODEL", "moonshot-v1-8k"))
+    fallback = normalize_model_name(os.getenv("OPENAI_FALLBACK_MODEL", "kimi-k2.6"))
+    candidates = [
+        preferred,
+        fallback,
+        "kimi-k2.6",
+        "kimi-k2.5",
+        "moonshot-v1-8k",
+        "moonshot-v1-auto",
+    ]
+    unique: list[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in unique:
+            unique.append(candidate)
+    return unique
+
+
 def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str | None:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         return None
 
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-    model = os.getenv("OPENAI_MODEL", "kimi-k3")
-    fallback_model = os.getenv("OPENAI_FALLBACK_MODEL", "kimi-k3")
-    model = {"kimi-k2.5": "kimi-k3", "kimi-k2.6": "kimi-k3"}.get(model, model)
-    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "22"))
+    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "28"))
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     context_text = "\n\n".join(
-        f"[来源 {i + 1}: {item['doc_title']} / 片段 {item['chunk_index'] + 1}]\n{item['content']}"
+        f"[来源 {i + 1}: {item['doc_title']} / 片段 {item['chunk_index'] + 1}]\n{item['content'][:900]}"
         for i, item in enumerate(contexts)
     )
     user_prompt = f"""用户问题：
@@ -194,6 +220,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
+            "max_tokens": 700,
         }
         return request.Request(
             f"{base_url}/chat/completions",
@@ -205,33 +232,45 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
             method="POST",
         )
 
+    failures: list[str] = []
+    for selected_model in ordered_model_candidates():
+        try:
+            with request.urlopen(make_request(selected_model), timeout=model_timeout) as response:
+                data = json.loads(response.read().decode("utf-8"))
+                content = data["choices"][0]["message"]["content"].strip()
+                if content:
+                    return content
+                failures.append(f"{selected_model}: 空回答")
+        except error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="ignore")
+            failures.append(f"{selected_model}: HTTP {exc.code} {exc.reason} {detail[:240]}")
+        except (error.URLError, KeyError, TimeoutError, socket.timeout, OSError) as exc:
+            failures.append(f"{selected_model}: {exc}")
+
+    return "模型调用失败，已切换到本地检索摘要模式。最近错误：" + "；".join(failures[:3])
+
+
+def list_openai_models() -> dict[str, Any]:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return {"ok": False, "error": "OPENAI_API_KEY 未配置", "models": []}
+
+    base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+    req = request.Request(
+        f"{base_url}/models",
+        headers={"Authorization": f"Bearer {api_key}"},
+        method="GET",
+    )
     try:
-        with request.urlopen(make_request(model), timeout=model_timeout) as response:
+        with request.urlopen(req, timeout=18) as response:
             data = json.loads(response.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"].strip()
+        models = [item.get("id") for item in data.get("data", []) if item.get("id")]
+        return {"ok": True, "base_url": base_url, "models": models}
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
-        if exc.code == 404 and model != fallback_model:
-            try:
-                with request.urlopen(make_request(fallback_model), timeout=model_timeout) as response:
-                    data = json.loads(response.read().decode("utf-8"))
-                    return data["choices"][0]["message"]["content"].strip()
-            except error.HTTPError as fallback_exc:
-                fallback_detail = fallback_exc.read().decode("utf-8", errors="ignore")
-                return (
-                    "模型调用失败，已切换到本地检索摘要模式。"
-                    f"原模型 {model} 错误：HTTP {exc.code} {exc.reason} {detail}；"
-                    f"备用模型 {fallback_model} 错误：HTTP {fallback_exc.code} {fallback_exc.reason} {fallback_detail}"
-                )
-            except (error.URLError, KeyError, TimeoutError, socket.timeout, OSError) as fallback_exc:
-                return (
-                    "模型调用失败，已切换到本地检索摘要模式。"
-                    f"原模型 {model} 错误：HTTP {exc.code} {exc.reason} {detail}；"
-                    f"备用模型 {fallback_model} 错误：{fallback_exc}"
-                )
-        return f"模型调用失败，已切换到本地检索摘要模式。错误：HTTP {exc.code} {exc.reason} {detail}"
-    except (error.URLError, KeyError, TimeoutError, socket.timeout, OSError) as exc:
-        return f"模型调用失败，已切换到本地检索摘要模式。错误：{exc}"
+        return {"ok": False, "base_url": base_url, "error": f"HTTP {exc.code} {exc.reason} {detail}", "models": []}
+    except (error.URLError, TimeoutError, socket.timeout, OSError) as exc:
+        return {"ok": False, "base_url": base_url, "error": str(exc), "models": []}
 
 
 def local_answer(message: str, contexts: list[dict[str, Any]]) -> str:
@@ -306,6 +345,9 @@ class AgentHandler(SimpleHTTPRequestHandler):
                     for doc in sorted(docs, key=lambda item: item["created_at"], reverse=True)
                 ]
             )
+            return
+        if parsed.path == "/api/models":
+            self.write_json(list_openai_models())
             return
         if parsed.path == "/" or parsed.path == "/index.html":
             self.serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
