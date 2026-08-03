@@ -164,9 +164,15 @@ def retrieve(query: str, docs: list[dict[str, Any]], top_k: int = 5) -> list[dic
 
 
 MODEL_ALIASES = {
-    "kimi-k3": "kimi-k2.6",
     "kimi-k2": "kimi-k2.6",
 }
+
+PREFERRED_MODEL_ORDER = [
+    "kimi-k2.7-code-highspeed",
+    "kimi-k3",
+    "kimi-k2.6",
+    "kimi-k2.7-code",
+]
 
 
 def normalize_model_name(model: str | None) -> str:
@@ -174,17 +180,39 @@ def normalize_model_name(model: str | None) -> str:
     return MODEL_ALIASES.get(clean, clean)
 
 
-def ordered_model_candidates() -> list[str]:
+def fetch_openai_model_ids(api_key: str, base_url: str, timeout: float = 6) -> list[str]:
+    req = request.Request(
+        f"{base_url}/models",
+        headers={"Authorization": f"Bearer {api_key}"},
+        method="GET",
+    )
+    try:
+        with request.urlopen(req, timeout=timeout) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        return [item.get("id") for item in data.get("data", []) if item.get("id")]
+    except (error.HTTPError, error.URLError, TimeoutError, socket.timeout, OSError, json.JSONDecodeError):
+        return []
+
+
+def ordered_model_candidates(api_key: str, base_url: str) -> list[str]:
     preferred = normalize_model_name(os.getenv("OPENAI_MODEL", "moonshot-v1-8k"))
-    fallback = normalize_model_name(os.getenv("OPENAI_FALLBACK_MODEL", "kimi-k2.6"))
-    candidates = [
-        preferred,
-        fallback,
-        "kimi-k2.6",
-        "kimi-k2.5",
-        "moonshot-v1-8k",
-        "moonshot-v1-auto",
-    ]
+    fallback = normalize_model_name(os.getenv("OPENAI_FALLBACK_MODEL", ""))
+    available_models = fetch_openai_model_ids(api_key, base_url)
+
+    if available_models:
+        available = set(available_models)
+        candidates = [
+            model
+            for model in [preferred, fallback, *PREFERRED_MODEL_ORDER, *available_models]
+            if model in available
+        ]
+    else:
+        candidates = [
+            preferred,
+            fallback,
+            *PREFERRED_MODEL_ORDER,
+        ]
+
     unique: list[str] = []
     for candidate in candidates:
         if candidate and candidate not in unique:
@@ -198,7 +226,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
         return None
 
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "28"))
+    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "14"))
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     context_text = "\n\n".join(
@@ -233,7 +261,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
         )
 
     failures: list[str] = []
-    for selected_model in ordered_model_candidates():
+    for selected_model in ordered_model_candidates(api_key, base_url):
         try:
             with request.urlopen(make_request(selected_model), timeout=model_timeout) as response:
                 data = json.loads(response.read().decode("utf-8"))
@@ -256,16 +284,14 @@ def list_openai_models() -> dict[str, Any]:
         return {"ok": False, "error": "OPENAI_API_KEY 未配置", "models": []}
 
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-    req = request.Request(
-        f"{base_url}/models",
-        headers={"Authorization": f"Bearer {api_key}"},
-        method="GET",
-    )
     try:
-        with request.urlopen(req, timeout=18) as response:
-            data = json.loads(response.read().decode("utf-8"))
-        models = [item.get("id") for item in data.get("data", []) if item.get("id")]
-        return {"ok": True, "base_url": base_url, "models": models}
+        models = fetch_openai_model_ids(api_key, base_url, timeout=18)
+        return {
+            "ok": bool(models),
+            "base_url": base_url,
+            "models": models,
+            "chat_candidates": ordered_model_candidates(api_key, base_url),
+        }
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
         return {"ok": False, "base_url": base_url, "error": f"HTTP {exc.code} {exc.reason} {detail}", "models": []}
