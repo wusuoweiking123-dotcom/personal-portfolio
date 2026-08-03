@@ -1,0 +1,9 @@
+services:
+  personal-rag-agent:
+    build: .
+    ports:
+      - "8765:8765"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data

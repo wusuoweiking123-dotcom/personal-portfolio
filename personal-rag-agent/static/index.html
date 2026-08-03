@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>个人知识库智能体</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Personal RAG Agent</p>
+            <h1>我的知识库智能体</h1>
+          </div>
+          <div class="status-pill" id="status">本地运行</div>
+        </header>
+
+        <section class="chat-panel" id="chat">
+          <article class="message assistant">
+            <div class="bubble">
+              你好，我已经准备好读取你的知识库了。上传几份资料后，可以问我总结、提炼、写报告、做销售话术或找风险点。
+            </div>
+          </article>
+        </section>
+
+        <form class="composer" id="chat-form">
+          <textarea id="message" rows="2" placeholder="问你的智能体：比如“根据知识库，帮我生成一份客户通话前简报”"></textarea>
+          <button type="submit">发送</button>
+        </form>
+      </section>
+
+      <aside class="knowledge-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Knowledge</p>
+            <h2>文档管理</h2>
+          </div>
+          <button class="ghost" id="refresh-docs" type="button">刷新</button>
+        </div>
+
+        <form class="doc-form" id="doc-form">
+          <label>
+            标题
+            <input id="doc-title" type="text" placeholder="例如：产品说明 / 客户资料 / 会议记录" />
+          </label>
+          <label>
+            内容
+            <textarea id="doc-content" rows="8" placeholder="粘贴 Markdown、网页正文、会议纪要、销售资料等"></textarea>
+          </label>
+          <label class="file-input">
+            <span>从本地文本文件导入</span>
+            <input id="doc-file" type="file" accept=".txt,.md,.csv,.json" />
+          </label>
+          <button type="submit">加入知识库</button>
+        </form>
+
+        <div class="doc-list" id="doc-list"></div>
+      </aside>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
