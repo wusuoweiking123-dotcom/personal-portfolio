@@ -168,7 +168,8 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
         return None
 
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    model = os.getenv("OPENAI_MODEL", "kimi-k3")
+    fallback_model = os.getenv("OPENAI_FALLBACK_MODEL", "kimi-k3")
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     context_text = "\n\n".join(
@@ -183,30 +184,48 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
 
 请基于这些材料回答。"""
 
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-    }
-
-    req = request.Request(
-        f"{base_url}/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
+    def make_request(selected_model: str) -> request.Request:
+        payload = {
+            "model": selected_model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        }
+        return request.Request(
+            f"{base_url}/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
 
     try:
-        with request.urlopen(req, timeout=45) as response:
+        with request.urlopen(make_request(model), timeout=45) as response:
             data = json.loads(response.read().decode("utf-8"))
             return data["choices"][0]["message"]["content"].strip()
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
+        if exc.code == 404 and model != fallback_model:
+            try:
+                with request.urlopen(make_request(fallback_model), timeout=45) as response:
+                    data = json.loads(response.read().decode("utf-8"))
+                    return data["choices"][0]["message"]["content"].strip()
+            except error.HTTPError as fallback_exc:
+                fallback_detail = fallback_exc.read().decode("utf-8", errors="ignore")
+                return (
+                    "模型调用失败，已切换到本地检索摘要模式。"
+                    f"原模型 {model} 错误：HTTP {exc.code} {exc.reason} {detail}；"
+                    f"备用模型 {fallback_model} 错误：HTTP {fallback_exc.code} {fallback_exc.reason} {fallback_detail}"
+                )
+            except (error.URLError, KeyError, TimeoutError) as fallback_exc:
+                return (
+                    "模型调用失败，已切换到本地检索摘要模式。"
+                    f"原模型 {model} 错误：HTTP {exc.code} {exc.reason} {detail}；"
+                    f"备用模型 {fallback_model} 错误：{fallback_exc}"
+                )
         return f"模型调用失败，已切换到本地检索摘要模式。错误：HTTP {exc.code} {exc.reason} {detail}"
     except (error.URLError, KeyError, TimeoutError) as exc:
         return f"模型调用失败，已切换到本地检索摘要模式。错误：{exc}"
