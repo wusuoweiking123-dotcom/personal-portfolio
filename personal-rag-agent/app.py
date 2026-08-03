@@ -7,6 +7,7 @@ import json
 import math
 import os
 import re
+import socket
 import time
 import uuid
 from collections import Counter
@@ -171,6 +172,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
     model = os.getenv("OPENAI_MODEL", "kimi-k3")
     fallback_model = os.getenv("OPENAI_FALLBACK_MODEL", "kimi-k3")
     model = {"kimi-k2.5": "kimi-k3", "kimi-k2.6": "kimi-k3"}.get(model, model)
+    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "22"))
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     context_text = "\n\n".join(
@@ -204,14 +206,14 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
         )
 
     try:
-        with request.urlopen(make_request(model), timeout=45) as response:
+        with request.urlopen(make_request(model), timeout=model_timeout) as response:
             data = json.loads(response.read().decode("utf-8"))
             return data["choices"][0]["message"]["content"].strip()
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
         if exc.code == 404 and model != fallback_model:
             try:
-                with request.urlopen(make_request(fallback_model), timeout=45) as response:
+                with request.urlopen(make_request(fallback_model), timeout=model_timeout) as response:
                     data = json.loads(response.read().decode("utf-8"))
                     return data["choices"][0]["message"]["content"].strip()
             except error.HTTPError as fallback_exc:
@@ -221,14 +223,14 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
                     f"原模型 {model} 错误：HTTP {exc.code} {exc.reason} {detail}；"
                     f"备用模型 {fallback_model} 错误：HTTP {fallback_exc.code} {fallback_exc.reason} {fallback_detail}"
                 )
-            except (error.URLError, KeyError, TimeoutError) as fallback_exc:
+            except (error.URLError, KeyError, TimeoutError, socket.timeout, OSError) as fallback_exc:
                 return (
                     "模型调用失败，已切换到本地检索摘要模式。"
                     f"原模型 {model} 错误：HTTP {exc.code} {exc.reason} {detail}；"
                     f"备用模型 {fallback_model} 错误：{fallback_exc}"
                 )
         return f"模型调用失败，已切换到本地检索摘要模式。错误：HTTP {exc.code} {exc.reason} {detail}"
-    except (error.URLError, KeyError, TimeoutError) as exc:
+    except (error.URLError, KeyError, TimeoutError, socket.timeout, OSError) as exc:
         return f"模型调用失败，已切换到本地检索摘要模式。错误：{exc}"
 
 

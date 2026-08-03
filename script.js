@@ -554,7 +554,7 @@ agentChatForm?.addEventListener('submit', async (event) => {
   try {
     const data = await agentRequest('/api/chat', {
       method: 'POST',
-      body: JSON.stringify({ message: question, top_k: 5 })
+      body: JSON.stringify({ message: question, top_k: 3 })
     });
     pending.remove();
     addAgentMessage('assistant', data.answer, data.sources || []);
