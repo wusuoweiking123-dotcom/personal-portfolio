@@ -170,10 +170,8 @@ MODEL_ALIASES = {
 }
 
 PREFERRED_MODEL_ORDER = [
-    "kimi-k2.7-code-highspeed",
     "kimi-k3",
     "kimi-k2.6",
-    "kimi-k2.7-code",
 ]
 
 
@@ -207,6 +205,7 @@ def ordered_model_candidates(api_key: str, base_url: str) -> list[str]:
             model
             for model in [preferred, fallback, *PREFERRED_MODEL_ORDER, *available_models]
             if model in available
+            and ("code" not in model or model in {preferred, fallback})
         ]
     else:
         candidates = [
@@ -228,7 +227,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
         return None
 
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "28"))
+    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "35"))
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     context_text = "\n\n".join(
@@ -330,7 +329,7 @@ def make_chat_response(message: str, top_k: int = 5) -> dict[str, Any]:
     contexts = retrieve(message, docs, top_k=top_k)
     answer: str | None = None
     if os.getenv("OPENAI_API_KEY"):
-        total_timeout = float(os.getenv("AGENT_MODEL_TOTAL_TIMEOUT_SECONDS", "35"))
+        total_timeout = float(os.getenv("AGENT_MODEL_TOTAL_TIMEOUT_SECONDS", "42"))
         future = MODEL_EXECUTOR.submit(call_openai_compatible, message, contexts)
         try:
             answer = future.result(timeout=total_timeout)
