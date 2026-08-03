@@ -45,8 +45,8 @@ const detailContent = {
   education: {
     kicker: 'Education · 2024.08—2028.07',
     title: '西交利物浦大学 · 金融数学',
-    paragraphs: ['金融数学学士在读，年级排名前 10%。课程训练覆盖概率、计算、金融与数据科学，为进一步研究随机建模和计算金融建立基础。'],
-    items: ['核心课程：随机过程、偏微分方程、数值分析、金融工程', '方法训练：机器学习、数据分析、Python 编程', '申请方向：金融数学、计算金融、金融工程及相关数量专业'],
+    paragraphs: ['金融数学学士在读，大二下均分 91.2，年级前三。课程训练覆盖概率、计算、金融与数据科学，为进一步研究随机建模、计算金融和智能体应用建立基础。'],
+    items: ['核心课程：随机过程、偏微分方程、数值分析、金融工程', '方法训练：机器学习、数据分析、Python 编程、Agent / RAG 工程', '申请方向：金融数学、计算金融、金融工程及相关数量专业'],
     materials: []
   },
   'research-stochastic': {
@@ -70,6 +70,42 @@ const detailContent = {
     items: ['当前独立研究：流体力学与机器学习的银屑病风险预测', '方法关注：多模态特征、模型校准、可解释机器学习'],
     materials: []
   },
+  'library-agent': {
+    kicker: 'AI / Agent Project · Core Developer',
+    title: '校园智能图书馆 Agent（本地 RAG 知识库）',
+    paragraphs: [
+      '面向校内学生搭建学习资料智能体，以 Streamlit 和本地 Llama3 构建交互问答，让 PDF、PPT、Word、Excel、CSV、Python、Notebook 等学习材料可以被统一解析、检索和追问。',
+      '这个项目的重点不只是“能聊天”，而是让知识库有可靠的文件解析、增量索引、问题路由、来源溯源和局域网交付能力。'
+    ],
+    items: [
+      '通过 Ollama nomic-embed-text 完成 Chunk Embedding，以 SQLite 存储向量与元数据并实现余弦检索',
+      '设计 file_manifest 增量索引流程，减少重复 OCR 与 Embedding 成本',
+      '设计 library / python / hybrid 三类问题路由与 Retrieved Context 溯源',
+      '接入波动率、历史 VaR、Expected Shortfall 与 GARCH proxy 等计算工具',
+      '加入 PyMuPDF + RapidOCR / PaddleOCR 回退，修复扫描 PDF 与整页 PPT 识别',
+      '实现密码登录、本地文件管理及局域网部署，并编写 35 页使用与调试教程'
+    ],
+    materials: [
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
+    ]
+  },
+  'portfolio-agent': {
+    kicker: 'Personal Product · Independent Developer',
+    title: '个人作品集网站与 RAG Agent',
+    paragraphs: [
+      '把个人网站、简历、项目说明和研究材料整合成一个可访问、可检索、可对话的作品集系统，目标是让访客可以直接询问“这个项目怎么做”“王忆航的贡献是什么”“成果在哪里看”。',
+      '后端提供 REST API、文档入库、TF-IDF 检索、OpenAI-compatible 模型回答和来源展示；前端嵌入到个人网站，并保留 Docker 与 n8n 自动化接口。'
+    ],
+    items: [
+      '完成个人项目展示网站，并将 AI 智能体嵌入为作品集问答入口',
+      '支持资料入库、本地检索、模型回答、来源片段返回和网页端交互',
+      '提供 /api/chat 与 /api/agent/run 接口，方便后续接入 n8n 或其他自动化流程',
+      '公开部署采用静态网站 + 受保护后端的方式，避免模型 API Key 暴露在浏览器中'
+    ],
+    materials: [
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
+    ]
+  },
   psoriasis: {
     kicker: 'Independent Interdisciplinary Research · Ongoing',
     title: '基于流体力学与机器学习的银屑病风险预测',
@@ -82,27 +118,27 @@ const detailContent = {
     ]
   },
   'asset-pricing': {
-    kicker: 'Asset Pricing · Team Lead',
-    title: 'CNN-Based Asset Pricing with Financial Price Images',
-    paragraphs: ['将结构化的 OHLCV 时序转化为多时间尺度金融价格图像，研究卷积神经网络能否识别传统人工因子之外的可预测信号。'],
-    items: ['基于 2024—2025 年中国 A 股数据构建 5、20、60 日图像', '使用 Python 与 PyTorch 生成 45,000+ 样本并完成模型训练', '以 Rank IC、ICIR、H-L 收益、Sharpe ratio、换手率与回撤评估表现'],
+    kicker: 'Asset Pricing · Project Developer',
+    title: 'A 股 CNN 价格图像与交易研究',
+    paragraphs: ['将结构化的 OHLCV 时序转化为 5 / 20 / 60 日灰度矩阵，研究多尺度 CNN 能否识别传统人工因子之外的短期交易信号，并用可实现交易规则验证样本外表现。'],
+    items: ['使用 PyTorch 训练多尺度 CNN，并完成 5 次集成、跨窗口迁移、横截面排序与 IC / 因子回归', '在 66 周可实现性评估中采用下一交易日开盘买入，并扣除单边万三交易费率', '固定候选策略后半段 Sharpe 为 2.26（33 周，持续前向验证）', '研究已由周频推进至高频交易版本'],
     materials: [
       { label: '查看项目完整报告', url: 'https://www.kdocs.cn/l/cuZnq75Yf1Ko' },
       { label: '本地代码 README', url: 'cnn-price-images-a-share/README.md' },
       { label: '中文项目说明', url: 'cnn-price-images-a-share/docs/PROJECT_SUMMARY_CN.md' },
-      { label: 'GitHub 主页', url: 'https://github.com/lizeruicq' }
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
     ]
   },
   'treasury-cnn': {
-    kicker: 'Fixed Income CNN · Research Prototype',
-    title: 'Treasury Bonds & Futures CNN Research',
-    paragraphs: ['将价格图像 CNN 方法迁移到中国国债现券和国债期货，重点检验固定收益资产在薄截面、不同期限合约和低频价格变化下是否仍能保留可学习的形态信号。'],
-    items: ['使用国债期货 TS/TF/T/TL 连续合约与交易所国债现券 OHLCV 数据', '构造 5、20、60 日价格图像，并预测 5、20、60 日未来收益方向', '训练设置包含 Adam、Xavier 初始化、BatchNorm、LeakyReLU、Dropout 与 5 次集成', '初步结果显示期货分支更可解释，现券分支仍受样本稀疏和流动性限制影响'],
+    kicker: 'Fixed Income CNN · Project Developer',
+    title: '中金所国债期货 CNN 期限结构研究',
+    paragraphs: ['将股票价格图像 CNN 迁移至国债期货 TF / T / TS / TL，构建连续期限面板和真实展期收益，避免跨合约价格直接相除造成机械跳变。'],
+    items: ['构建 t+0 / t+1 / t+2 连续期限面板，处理合约切换和期限结构口径', '搭建 1 / 5 / 20 日多尺度 CNN 与 3-12 通道扩展方案', '采用时间顺序切分、purge 与样本外买入日期排序降低泄漏风险', 'GPU 训练和稳定性检验持续推进中'],
     materials: [
       { label: '本地代码 README', url: 'treasury-bonds-futures-cnn/README.md' },
       { label: '研究笔记', url: 'treasury-bonds-futures-cnn/docs/research_note_v1.md' },
       { label: 'GPU 运行说明', url: 'treasury-bonds-futures-cnn/RUN_ON_GPU.md' },
-      { label: 'GitHub 主页', url: 'https://github.com/lizeruicq' }
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
     ]
   },
   ctmc: {
@@ -111,7 +147,7 @@ const detailContent = {
     paragraphs: ['研究连续时间马尔可夫链近似在扩散与跳扩散过程中的数值应用，并将理论近似落实为可计算的定价框架。'],
     items: ['状态空间离散化与生成矩阵构建', '参数估计与衍生品定价模块设计', '探索数值随机方法与机器学习的结合'],
     materials: [
-      { label: 'GitHub 主页', url: 'https://github.com/lizeruicq' }
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
     ]
   },
   mcm: {
@@ -120,7 +156,7 @@ const detailContent = {
     paragraphs: ['针对 DWTS 评分机制中隐蔽投票不可观测、规则变化影响公平性的问题，构建混合模型并量化结论的不确定性。'],
     items: ['搭建 HP-MBRF 混合建模框架，融合线性/整数规划、随机森林、最大熵原则与 Bootstrap', '使用 LMM 与 LightGBM 集成模型分析多维因素与非线性关系', '完成 100,000 次蒙特卡洛路径迭代及截断对数正态分布拟合', '92% 样本落入不确定性区间，结构一致性 SCS=0.85；结合安全区模型与 NSGA-II 完成多目标优化'],
     materials: [
-      { label: 'GitHub 主页', url: 'https://github.com/lizeruicq' }
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
     ]
   },
   'carbon-option': {
@@ -129,7 +165,7 @@ const detailContent = {
     paragraphs: ['围绕中国碳排放权的非线性波动特征，构建基于 Heston 随机波动率模型的碳期权定价体系。'],
     items: ['针对传统 Black-Scholes 定价偏差进行随机波动率参数校准', '使用 Python（NumPy/SciPy）完成 100,000 次风险中性蒙特卡洛路径迭代', '检查代码与误差控制逻辑，输出隐含波动率曲面', '完成碳资产公允价值评估与风险敞口测算'],
     materials: [
-      { label: 'GitHub 主页', url: 'https://github.com/lizeruicq' }
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
     ]
   },
   'var-project': {
@@ -138,7 +174,7 @@ const detailContent = {
     paragraphs: ['以大规模金融交易数据为对象，完成从数据清洗、特征提取到投资组合风险估值的完整流程。'],
     items: ['使用 SQL 清洗交易数据并提取风险特征', '以 Python 构建蒙特卡洛模型评估复杂投资组合 VaR', '完成多情景现金流折现与敏感性分析', '量化分析报告在实训团队中获得优异评价'],
     materials: [
-      { label: 'GitHub 主页', url: 'https://github.com/lizeruicq' }
+      { label: 'GitHub 主页', url: 'https://github.com/wusuoweiking123-dotcom' }
     ]
   },
   'coffeeco-strategy': {
@@ -204,6 +240,22 @@ const detailContent = {
       { label: '物流 ETL Python 源码', url: 'assets/walmart/populate_database.py' },
       { label: 'Walmart 项目仓库', url: 'https://github.com/theforage/forage-walmart-task-4' }
     ]
+  },
+  'trs-ai': {
+    kicker: 'Internship Project · 2026.07.15—2026.08.14',
+    title: '拓尔思智能 · 大模型应用开发实习项目',
+    paragraphs: [
+      '围绕大模型应用开发进行项目制实习，训练从模型调用、Prompt 设计、RAG 检索到 Agent 工作流落地的完整思路。',
+      '这段经历把个人项目中的本地 RAG 实践，进一步连接到企业场景里的需求文档、技术路线、原型测试和项目汇报。'
+    ],
+    items: [
+      '学习 LLM 结构与训练逻辑，实践基座模型调用和离线部署',
+      '实践结构化 Prompt、CoT、RAG、ReAct / ToT / SC 等推理与工作流方法',
+      '完成智能学习助手 RAG 实践与 Coze Agent 工作流搭建',
+      '学习 MCP、后端 API 与外部工具调用',
+      '参与需求文档、技术路线、原型测试和项目汇报'
+    ],
+    materials: []
   },
   'citic-bank': {
     kicker: 'Internship · 2025.08—2025.09',
@@ -377,7 +429,11 @@ detailDialog.addEventListener('click', (event) => {
   if (event.target === detailDialog) closeDetail();
 });
 
-const agentApiBase = window.PORTFOLIO_AGENT_API_BASE || (window.location.protocol === 'file:' ? 'http://127.0.0.1:8765' : '');
+const configuredAgentApiBase = window.PORTFOLIO_AGENT_API_BASE || '';
+const agentApiBase = configuredAgentApiBase || (window.location.protocol === 'file:' ? 'http://127.0.0.1:8765' : '');
+const isPublicAgentPage = window.location.protocol !== 'file:';
+const canManageAgentDocs = !isPublicAgentPage || window.PORTFOLIO_AGENT_ADMIN === true;
+const agentAdminToken = window.PORTFOLIO_AGENT_ADMIN_TOKEN || '';
 const agentStatus = document.getElementById('agent-status');
 const agentMessages = document.getElementById('agent-messages');
 const agentChatForm = document.getElementById('agent-chat-form');
@@ -395,14 +451,16 @@ function setAgentStatus(text) {
 
 async function agentRequest(path, options = {}) {
   if (!agentApiBase) {
-    throw new Error('公共版智能体后端尚未部署');
+    throw new Error('公网智能体后端尚未接入');
   }
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+  if (agentAdminToken) headers['X-Admin-Token'] = agentAdminToken;
   const response = await fetch(`${agentApiBase}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {})
-    }
+    headers
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || '请求失败');
@@ -436,6 +494,12 @@ function addAgentMessage(role, text, sources = []) {
 
 async function loadAgentDocs() {
   if (!agentDocList) return;
+  if (agentDocForm && !canManageAgentDocs) {
+    agentDocForm.hidden = true;
+  }
+  if (agentRefreshDocs && !canManageAgentDocs) {
+    agentRefreshDocs.textContent = '刷新来源';
+  }
   try {
     const docs = await agentRequest('/api/docs');
     agentDocList.replaceChildren();
@@ -456,21 +520,24 @@ async function loadAgentDocs() {
       title.textContent = doc.title;
       const meta = document.createElement('span');
       meta.textContent = `${doc.chars} 字符 · ${new Date(doc.created_at).toLocaleString()}`;
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.textContent = '删除';
-      remove.addEventListener('click', async () => {
-        await agentRequest(`/api/docs/${doc.id}`, { method: 'DELETE' });
-        await loadAgentDocs();
-      });
-      card.append(title, meta, remove);
+      card.append(title, meta);
+      if (canManageAgentDocs) {
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.textContent = '删除';
+        remove.addEventListener('click', async () => {
+          await agentRequest(`/api/docs/${doc.id}`, { method: 'DELETE' });
+          await loadAgentDocs();
+        });
+        card.appendChild(remove);
+      }
       agentDocList.appendChild(card);
     });
   } catch (error) {
     setAgentStatus('未连接');
     agentDocList.innerHTML = window.location.protocol === 'file:'
       ? '<article class="agent-doc-card"><strong>服务未启动</strong><span>请运行 personal-rag-agent/start.command 后刷新。</span></article>'
-      : '<article class="agent-doc-card"><strong>AI 问答即将开放</strong><span>网站已可公开访问；智能体后端部署后将在这里启用。</span></article>';
+      : '<article class="agent-doc-card"><strong>公网后端待接入</strong><span>前端已准备好；部署 Agent 后填写 HTTPS 地址即可让访客对话。</span></article>';
   }
 }
 
@@ -494,7 +561,10 @@ agentChatForm?.addEventListener('submit', async (event) => {
     setAgentStatus('已连接');
   } catch (error) {
     pending.remove();
-    addAgentMessage('assistant', `暂时连不上本地智能体服务：${error.message}\n请确认 start.command 对应的 Terminal 窗口正在运行。`);
+    const hint = window.location.protocol === 'file:'
+      ? '请确认 personal-rag-agent/start.command 对应的 Terminal 窗口正在运行。'
+      : '公网 Agent 后端还没有接入，部署完成后这里会自动变成真实问答。';
+    addAgentMessage('assistant', `暂时连不上智能体服务：${error.message}\n${hint}`);
     setAgentStatus('未连接');
   }
 });
@@ -507,6 +577,10 @@ agentQuestion?.addEventListener('keydown', (event) => {
 
 agentDocForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (!canManageAgentDocs) {
+    addAgentMessage('assistant', '公开页面只开放访客问答，不开放资料入库。知识库更新请在本地或受保护后台完成。');
+    return;
+  }
   const title = agentDocTitle.value.trim();
   const content = agentDocContent.value.trim();
   if (!content) return;
