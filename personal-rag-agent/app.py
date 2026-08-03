@@ -11,6 +11,7 @@ import socket
 import time
 import uuid
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -23,6 +24,7 @@ ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
 DATA_DIR = ROOT / "data"
 DOCS_FILE = DATA_DIR / "docs.json"
+MODEL_EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
 DEFAULT_SYSTEM_PROMPT = """你是王忆航个人网站上的作品集知识库智能体。
 你的任务是帮助访客理解王忆航的研究项目、GitHub 代码、成果材料、方法选择和个人贡献。
@@ -168,9 +170,9 @@ MODEL_ALIASES = {
 }
 
 PREFERRED_MODEL_ORDER = [
-    "kimi-k2.7-code-highspeed",
     "kimi-k3",
     "kimi-k2.6",
+    "kimi-k2.7-code-highspeed",
     "kimi-k2.7-code",
 ]
 
@@ -226,7 +228,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
         return None
 
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "14"))
+    model_timeout = float(os.getenv("MODEL_TIMEOUT_SECONDS", "9"))
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     context_text = "\n\n".join(
@@ -315,7 +317,7 @@ def local_answer(message: str, contexts: list[dict[str, Any]]) -> str:
         bullets.append(f"- 来自《{item['doc_title']}》：{snippet}")
 
     return (
-        "我先用本地检索模式回答。配置大模型 API Key 后，我可以把这些材料组织成更像“作品集答辩”的完整回答。\n\n"
+        "我先用本地检索模式回答。模型服务可用时，我会把这些材料组织成更像“作品集答辩”的完整回答。\n\n"
         f"你的问题：{message}\n\n"
         "最相关的知识片段：\n"
         + "\n".join(bullets)
@@ -326,7 +328,18 @@ def local_answer(message: str, contexts: list[dict[str, Any]]) -> str:
 def make_chat_response(message: str, top_k: int = 5) -> dict[str, Any]:
     docs = load_docs()
     contexts = retrieve(message, docs, top_k=top_k)
-    answer = call_openai_compatible(message, contexts)
+    answer: str | None = None
+    if os.getenv("OPENAI_API_KEY"):
+        total_timeout = float(os.getenv("AGENT_MODEL_TOTAL_TIMEOUT_SECONDS", "22"))
+        future = MODEL_EXECUTOR.submit(call_openai_compatible, message, contexts)
+        try:
+            answer = future.result(timeout=total_timeout)
+        except FutureTimeoutError:
+            answer = (
+                "模型响应较慢，我先用知识库检索结果回答。"
+                "你可以稍后再试一次，通常 Render 免费实例或 Kimi 排队结束后会恢复完整模型回答。\n\n"
+                + local_answer(message, contexts)
+            )
     if answer is None:
         answer = local_answer(message, contexts)
     return {"answer": answer, "sources": contexts}
