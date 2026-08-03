@@ -170,6 +170,7 @@ def call_openai_compatible(message: str, contexts: list[dict[str, Any]]) -> str 
     base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
     model = os.getenv("OPENAI_MODEL", "kimi-k3")
     fallback_model = os.getenv("OPENAI_FALLBACK_MODEL", "kimi-k3")
+    model = {"kimi-k2.5": "kimi-k3", "kimi-k2.6": "kimi-k3"}.get(model, model)
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     context_text = "\n\n".join(
