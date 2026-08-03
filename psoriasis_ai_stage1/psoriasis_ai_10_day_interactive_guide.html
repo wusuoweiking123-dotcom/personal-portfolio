@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>银屑病 AI 研究 10 天交互式说明书</title>
+  <style>
+    :root {
+      --ink: #18212f;
+      --muted: #5d6878;
+      --line: #d9e0ea;
+      --panel: #ffffff;
+      --soft: #f5f7fa;
+      --teal: #0f766e;
+      --blue: #1d4ed8;
+      --amber: #b45309;
+      --rose: #be123c;
+      --green: #166534;
+      --shadow: 0 12px 32px rgba(24, 33, 47, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: #eef2f6;
+      line-height: 1.45;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      background: #172033;
+      color: #f8fafc;
+      padding: 22px 16px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #e0f2fe;
+      color: #075985;
+      font-weight: 800;
+    }
+
+    .brand h1 {
+      font-size: 16px;
+      line-height: 1.2;
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .progress-shell {
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      height: 10px;
+      margin: 10px 0 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #22c55e;
+      transition: width 0.2s ease;
+    }
+
+    .progress-label {
+      color: #cbd5e1;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }
+
+    .day-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .day-btn {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #f8fafc;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .day-btn strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .day-btn span {
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+
+    .day-btn.active {
+      background: #f8fafc;
+      color: #111827;
+      border-color: #f8fafc;
+    }
+
+    .day-btn.active span { color: #475569; }
+
+    main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .title-block h2 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      letter-spacing: 0;
+    }
+
+    .title-block p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 920px;
+    }
+
+    .utility {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button, .open-link {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
+
+    button.warn {
+      color: #7f1d1d;
+      border-color: #fecaca;
+      background: #fff7f7;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .section-body {
+      padding: 16px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .pill.core { color: #065f46; border-color: #a7f3d0; background: #ecfdf5; }
+    .pill.high { color: #92400e; border-color: #fde68a; background: #fffbeb; }
+    .pill.medium { color: #334155; border-color: #cbd5e1; background: #f8fafc; }
+
+    .checklist {
+      display: grid;
+      gap: 9px;
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 9px 0;
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .check-item:last-child { border-bottom: 0; }
+
+    .check-item input {
+      margin-top: 3px;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--teal);
+    }
+
+    .check-item label {
+      cursor: pointer;
+    }
+
+    .output-box {
+      width: 100%;
+      min-height: 145px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      resize: vertical;
+      font: 13px/1.5 Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .paper-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .paper {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .paper-top {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .paper h4 {
+      font-size: 14px;
+      margin: 0 0 6px;
+      line-height: 1.35;
+    }
+
+    .paper p {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 10px;
+    }
+
+    .paper-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .read-link {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 150px;
+      gap: 10px;
+    }
+
+    input[type="search"], select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 13px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .mini-table th, .mini-table td {
+      border-bottom: 1px solid #edf1f6;
+      text-align: left;
+      padding: 9px 8px;
+      vertical-align: top;
+    }
+
+    .mini-table th {
+      color: #334155;
+      background: #f8fafc;
+    }
+
+    .callout {
+      border-left: 4px solid var(--teal);
+      background: #f0fdfa;
+      padding: 12px;
+      border-radius: 6px;
+      color: #134e4a;
+      margin-bottom: 12px;
+    }
+
+    .warning {
+      border-left-color: var(--amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .copy-status {
+      color: var(--green);
+      font-size: 12px;
+      min-height: 16px;
+    }
+
+    @media (max-width: 1050px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        position: static;
+        height: auto;
+      }
+      .day-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+      .utility {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 680px) {
+      main { padding: 14px; }
+      .day-list { grid-template-columns: 1fr; }
+      .search-row { grid-template-columns: 1fr; }
+      .title-block h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="mark">PS</div>
+        <h1>银屑病 AI 研究<br>10 天说明书</h1>
+      </div>
+      <div class="progress-shell"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-label" id="progressLabel">0 / 0 已完成</div>
+      <div class="day-list" id="dayList"></div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="title-block">
+          <h2 id="dayTitle"></h2>
+          <p id="dayGoal"></p>
+        </div>
+        <div class="utility">
+          <a class="open-link" href="../outputs/psoriasis_ai_stage1/psoriasis_ai_literature_matrix_stage1.xlsx">打开文献矩阵</a>
+          <button id="exportBtn">导出进度</button>
+          <button id="resetBtn" class="warn">清空勾选</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div>
+          <section class="section">
+            <div class="section-head">
+              <h3>今日阅读顺序</h3>
+              <span class="pill" id="dayTime"></span>
+            </div>
+            <div class="section-body">
+              <div id="readingOrder"></div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <h3>今日任务清单</h3>
+              <span class="pill" id="taskCount"></span>
+            </div>
+            <div class="section-body">
+              <div class="checklist" id="taskList"></div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <h3>今日产出模板</h3>
+              <button id="copyTemplateBtn">复制模板</button>
+            </div>
+            <div class="section-body">
+              <textarea class="output-box" id="templateBox"></textarea>
+              <div class="copy-status" id="copyStatus"></div>
+            </div>
+          </section>
+        </div>
+
+        <div>
+          <section class="section">
+            <div class="section-head">
+              <h3>今日必读资料</h3>
+              <span class="pill core" id="paperCount"></span>
+            </div>
+            <div class="section-body">
+              <div class="paper-grid" id="dailyPapers"></div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <h3>全文献库</h3>
+              <span class="pill">39 篇</span>
+            </div>
+            <div class="section-body">
+              <div class="search-row">
+                <input id="paperSearch" type="search" placeholder="搜索标题、作者、类别、关键词" />
+                <select id="paperFilter">
+                  <option value="all">全部类别</option>
+                  <option value="Review">Review</option>
+                  <option value="Severity">Severity/PASI</option>
+                  <option value="Diagnosis">Diagnosis</option>
+                  <option value="Treatment">Treatment</option>
+                  <option value="PsA">PsA/Comorbidity</option>
+                  <option value="Progression">Progression/LSCI</option>
+                </select>
+              </div>
+              <div class="paper-grid" id="libraryPapers" style="margin-top:12px;"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sources = {
+      niams: "https://www.niams.nih.gov/health-topics/psoriasis",
+      aad: "https://www.aad.org/member/clinical-quality/guidelines/psoriasis",
+      nice: "https://www.nice.org.uk/guidance/cg153/ifp/chapter/phototherapy",
+      scin: "https://github.com/google-research-datasets/scin",
+      fitz: "https://github.com/mattgroh/fitzpatrick17k",
+      ddi: "https://ddi-dataset.github.io/",
+      dermnet: "https://dermnetnz.org/topics/dermnet-skin-disease-atlas-dataset",
+      chizariFigshare: "https://doi.org/10.6084/m9.figshare.14995083"
+    };
+
+    const papers = [
+      {id:1, day:2, category:"Review", priority:"Core", year:2024, author:"Barlow", title:"AI in Psoriatic Disease: Scoping Review", journal:"JMIR Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/39413371/", why:"先读它。它告诉你 AI 在银屑病疾病谱中已经做过诊断、严重度、治疗反应和临床结局预测。"},
+      {id:2, day:2, category:"Review", priority:"Core", year:2023, author:"Liu", title:"Artificial intelligence in psoriasis: Where we are and where we are going", journal:"Experimental Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/37740587/", why:"用来建立论文分类框架：诊断、分割、严重度、治疗和管理。"},
+      {id:3, day:4, category:"Review", priority:"Core", year:2024, author:"Li", title:"A review of psoriasis image analysis based on machine learning", journal:"Frontiers in Medicine", url:"https://pubmed.ncbi.nlm.nih.gov/39170035/", why:"直接支持你的 gap：现有图像 AI 多数是定位、识别、面积/严重度评分。"},
+      {id:4, day:4, category:"Review", priority:"Core", year:2025, author:"McMullen", title:"Predicting psoriasis severity using machine learning: a systematic review", journal:"Clinical and Experimental Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/39172548/", why:"证明 severity/PASI 是已有热点，所以你的题目要避开泛泛严重度评估。"},
+      {id:5, day:4, category:"Review", priority:"High", year:2024, author:"Goessinger", title:"Image-Based Artificial Intelligence in Psoriasis Assessment: The Beginning of a New Diagnostic Era?", journal:"American Journal of Clinical Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/39259262/", why:"帮助你理解图像标准化、商业系统和临床转化。"},
+      {id:6, day:4, category:"Review", priority:"High", year:2024, author:"McMullen", title:"Machine Learning Applications in Psoriasis Treatment: A Systematic Review", journal:"Journal of Cutaneous Medicine and Surgery", url:"https://pubmed.ncbi.nlm.nih.gov/38450601/", why:"支撑治疗调整和个体化治疗这个价值点。"},
+      {id:7, day:4, category:"Review", priority:"High", year:2023, author:"Lunge", title:"Therapeutic application of machine learning in psoriasis: A PRISMA systematic review", journal:"Journal of Cosmetic Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/35621249/", why:"补充治疗相关 ML 的综述证据。"},
+      {id:8, day:4, category:"Review", priority:"Medium", year:2020, author:"Yu", title:"Machine Learning Applications in the Evaluation and Management of Psoriasis: A Systematic Review", journal:"Journal of Psoriasis and Psoriatic Arthritis", url:"https://pubmed.ncbi.nlm.nih.gov/33733038/", why:"早期系统综述，可作为领域发展背景。"},
+      {id:9, day:4, category:"Review", priority:"Medium", year:2025, author:"Cai", title:"Assessing the performance of artificial intelligence models in evaluating inflammatory skin disease severity", journal:"British Journal of Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/40570030/", why:"把银屑病放进 inflammatory skin disease severity AI 的大趋势。"},
+      {id:10, day:4, category:"Review", priority:"Medium", year:2024, author:"Smith", title:"Advancing Psoriasis Care through Artificial Intelligence: A Comprehensive Review", journal:"Current Dermatology Reports", url:"https://pubmed.ncbi.nlm.nih.gov/39301276/", why:"作为补充综述，不作为主轴。"},
+      {id:11, day:6, category:"Severity/PASI", priority:"Core", year:2023, author:"Huang", title:"Artificial Intelligence-Based Psoriasis Severity Assessment: Real-world Study and Application", journal:"JMIR", url:"https://pubmed.ncbi.nlm.nih.gov/36927843/", why:"SkinTeller 代表性工作，14,096 张图像、2,367 名患者，是严重度 AI 的核心案例。"},
+      {id:12, day:6, category:"Severity/PASI", priority:"Core", year:2022, author:"Okamoto", title:"Artificial intelligence for the automated single-shot assessment of psoriasis severity", journal:"JEADV", url:"https://pubmed.ncbi.nlm.nih.gov/35739649/", why:"展示单张/少量照片估计 PASI 的思路。"},
+      {id:13, day:5, category:"Segmentation/Area", priority:"Core", year:2020, author:"Meienberger", title:"Observer-independent assessment of psoriasis-affected area using machine learning", journal:"JEADV", url:"https://pubmed.ncbi.nlm.nih.gov/31594034/", why:"面积评估是未来扩展预测的基础。"},
+      {id:14, day:6, category:"Severity/PASI", priority:"High", year:2024, author:"Maulana", title:"Psoriasis severity assessment: Optimizing diagnostic models with deep learning", journal:"Narra Journal", url:"https://pubmed.ncbi.nlm.nih.gov/39816098/", why:"标准深度学习严重度分类案例。"},
+      {id:15, day:6, category:"Severity/PASI", priority:"Medium", year:2022, author:"Amruthalingam", title:"Quantification of Efflorescences in Pustular Psoriasis Using Deep Learning", journal:"Healthcare Informatics Research", url:"https://pubmed.ncbi.nlm.nih.gov/35982596/", why:"说明 AI 可以量化具体皮损元素。"},
+      {id:16, day:6, category:"Imaging Biomarkers", priority:"Core", year:2024, author:"He", title:"Machine Learning Analysis of Human Skin by Optoacoustic Mesoscopy for Automated Extraction of Psoriasis and Aging Biomarkers", journal:"IEEE TMI", url:"https://pubmed.ncbi.nlm.nih.gov/38241120/", why:"和 LSCI 一样属于影像生物标志物路线，方法价值很高。"},
+      {id:17, day:6, category:"Severity/PASI", priority:"Medium", year:2025, author:"Yang", title:"Development and Validation of an AI-Driven Model for Erythrodermic Psoriasis Severity", journal:"American Journal of Clinical Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/40856906/", why:"非图像临床/实验室 ML 严重度分层案例。"},
+      {id:18, day:5, category:"Diagnosis", priority:"High", year:2022, author:"Yu", title:"Differentiating scalp psoriasis and seborrheic dermatitis from dermoscopic images", journal:"Frontiers in Medicine", url:"https://pubmed.ncbi.nlm.nih.gov/36405606/", why:"诊断类论文里比较适合精读，任务定义清楚，还和医生表现比较。"},
+      {id:19, day:5, category:"Diagnosis", priority:"Medium", year:2023, author:"Hammad", title:"Enhanced Deep Learning Approach for Accurate Eczema and Psoriasis Skin Detection", journal:"Sensors", url:"https://pubmed.ncbi.nlm.nih.gov/37631831/", why:"作为移动应用/多病种检测案例，也要注意数据和泛化问题。"},
+      {id:20, day:5, category:"Diagnosis", priority:"Medium", year:2024, author:"Eskandari", title:"Efficient diagnosis of psoriasis and lichen planus using deep learning", journal:"Scientific Reports", url:"https://pubmed.ncbi.nlm.nih.gov/38678100/", why:"相似皮肤病鉴别诊断案例。"},
+      {id:21, day:5, category:"Diagnosis", priority:"Medium", year:2024, author:"Chakraborty", title:"CAD-PsorNet: deep transfer learning for computer-assisted diagnosis of skin psoriasis", journal:"Scientific Reports", url:"https://pubmed.ncbi.nlm.nih.gov/39489752/", why:"典型 transfer learning pipeline，可作为方法背景但不是主线。"},
+      {id:22, day:5, category:"Diagnosis", priority:"Medium", year:2022, author:"Aijaz", title:"Deep Learning Application for Classification of Different Types of Psoriasis", journal:"Journal of Healthcare Engineering", url:"https://pubmed.ncbi.nlm.nih.gov/35075392/", why:"银屑病亚型分类案例。"},
+      {id:23, day:6, category:"Severity/PASI", priority:"High", year:2023, author:"Folle", title:"DeepNAPSI multi-reader nail psoriasis prediction using deep learning", journal:"Scientific Reports", url:"https://pubmed.ncbi.nlm.nih.gov/37005487/", why:"指甲银屑病评分自动化案例，强调多读者评估。"},
+      {id:24, day:6, category:"Severity/PASI", priority:"Medium", year:2024, author:"Horikawa", title:"Reliable and easy-to-use calculating tool for NAPSI using deep learning", journal:"NPJ Systems Biology and Applications", url:"https://pubmed.ncbi.nlm.nih.gov/39511184/", why:"从模型到工具的转化案例。"},
+      {id:25, day:6, category:"Severity/PASI", priority:"Medium", year:2024, author:"Paik", title:"Automatic evaluation of Nail Psoriasis Severity Index using deep learning", journal:"Journal of Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/38847292/", why:"YOLOv7 目标检测式标注/评分案例。"},
+      {id:26, day:6, category:"Severity/PASI", priority:"Medium", year:2025, author:"Kemenes", title:"Independent validation of automated mNAPSI scoring using deep learning", journal:"Frontiers in Medicine", url:"https://pubmed.ncbi.nlm.nih.gov/40241894/", why:"强调独立验证，对你以后评估模型很重要。"},
+      {id:27, day:7, category:"Treatment", priority:"Core", year:2023, author:"Du", title:"Machine learning model for predicting outcomes of biologic therapy in psoriasis", journal:"JAAD", url:"https://pubmed.ncbi.nlm.nih.gov/36720368/", why:"治疗反应预测代表，说明 AI 在临床决策支持中更容易找到价值。"},
+      {id:28, day:7, category:"Treatment", priority:"Core", year:2025, author:"Peng", title:"Machine Learning-Driven Prediction Models for Brodalumab Therapeutic Effect", journal:"Psoriasis (Auckland)", url:"https://pubmed.ncbi.nlm.nih.gov/40873762/", why:"临床和转录组数据结合预测治疗反应。"},
+      {id:29, day:7, category:"Treatment", priority:"High", year:2025, author:"Huang", title:"Personalized prediction of psoriasis relapse post-biologic discontinuation", journal:"Journal of Dermatological Treatment", url:"https://pubmed.ncbi.nlm.nih.gov/40107277/", why:"预测会影响随访和治疗策略，是临床价值论证模板。"},
+      {id:30, day:7, category:"Treatment", priority:"Medium", year:2021, author:"Gottlieb", title:"Secukinumab Efficacy in Psoriatic Arthritis", journal:"Journal of Clinical Rheumatology", url:"https://pubmed.ncbi.nlm.nih.gov/32015257/", why:"PsA 生物制剂疗效预测背景。"},
+      {id:31, day:7, category:"Treatment", priority:"Medium", year:2025, author:"Wei", title:"Targets Linked to IL-17A Inhibitor Response in Psoriasis Using ML", journal:"Clinical, Cosmetic and Investigational Dermatology", url:"https://pubmed.ncbi.nlm.nih.gov/41473417/", why:"生物标志物和治疗反应相连的例子。"},
+      {id:32, day:7, category:"PsA", priority:"Core", year:2023, author:"Xu", title:"Multi-modality data-driven analysis of diagnosis and treatment of psoriatic arthritis", journal:"NPJ Digital Medicine", url:"https://pubmed.ncbi.nlm.nih.gov/36732611/", why:"风险分层和进展预测的强案例，虽然目标是 PsA。"},
+      {id:33, day:7, category:"PsA", priority:"High", year:2025, author:"Ganatra", title:"Clinical, Genetic and Protein Markers Discriminate PsA from Psoriasis", journal:"Journal of Psoriasis and Psoriatic Arthritis", url:"https://pubmed.ncbi.nlm.nih.gov/40400532/", why:"多模态生物标志物设计可借鉴。"},
+      {id:34, day:7, category:"PsA", priority:"Medium", year:2021, author:"Giovannini", title:"The Digital Way to Intercept Psoriatic Arthritis", journal:"Frontiers in Medicine", url:"https://pubmed.ncbi.nlm.nih.gov/34888334/", why:"早期识别和数字化管理的临床价值语言。"},
+      {id:35, day:7, category:"PsA", priority:"Medium", year:2025, author:"Bilgin", title:"AI in management of RA, axial spondyloarthritis, and psoriatic arthritis", journal:"Therapeutic Advances in Musculoskeletal Disease", url:"https://pubmed.ncbi.nlm.nih.gov/40547599/", why:"银屑病疾病谱之外的 AI 管理背景。"},
+      {id:36, day:3, category:"Progression", priority:"Core", year:2022, author:"Schaap", title:"Perfusion measured by LSCI as a predictor for expansion of psoriasis lesions", journal:"Skin Research and Technology", url:"https://pubmed.ncbi.nlm.nih.gov/34619003/", why:"你的题目最核心文献。110 个皮损、6 名患者、281 个两周结局，perilesional perfusion 预测扩展。"},
+      {id:37, day:3, category:"Progression", priority:"Core", year:2021, author:"Chizari", title:"Handheld versus mounted laser speckle contrast perfusion imaging demonstrated in psoriasis lesions", journal:"Scientific Reports", url:"https://pubmed.ncbi.nlm.nih.gov/34404886/", why:"LSCI 可行性背景，不能替代 Schaap 扩展数据。"},
+      {id:38, day:4, category:"Review", priority:"Medium", year:2023, author:"Choy", title:"Systematic review of deep learning image analyses for diagnosis and monitoring of skin disease", journal:"NPJ Digital Medicine", url:"https://pubmed.ncbi.nlm.nih.gov/37758829/", why:"更广泛皮肤病 AI 方法质量背景。"},
+      {id:39, day:4, category:"Review", priority:"Medium", year:2024, author:"Li Pomi", title:"AI in Chronic Inflammatory and Autoimmune Skin Diseases", journal:"Life", url:"https://pubmed.ncbi.nlm.nih.gov/38672786/", why:"把银屑病放在慢性炎症性皮肤病 AI 中理解。"}
+    ];
+
+    const days = [
+      {
+        day: 1,
+        title: "Day 1：医学背景与治疗框架",
+        time: "2-3 小时",
+        goal: "读懂银屑病是什么、为什么会反复/扩散、医生如何治疗，以及为什么“减少 UV 光疗危害”不是最稳的主论点。",
+        order: [
+          {label:"1. NIAMS：银屑病基础", url:sources.niams, note:"先建立病因和慢病概念：免疫介导、遗传/环境触发、共病和治疗大类。"},
+          {label:"2. AAD：临床指南入口", url:sources.aad, note:"看治疗类别和严重度评估语言，不需要一次读完全部指南。"},
+          {label:"3. NICE：光疗说明", url:sources.nice, note:"重点理解光疗有效、标准、需监测，但不是你的唯一价值切口。"}
+        ],
+        tasks: [
+          "写下银屑病的 3 个关键词：慢性、免疫介导、动态管理。",
+          "列出治疗方法：外用药、光疗、传统系统治疗、生物制剂/小分子。",
+          "写一句为什么不能主打“减少 UV 光疗危害”。",
+          "写一句更稳的医学价值定位。"
+        ],
+        template: "Day 1 输出：医学背景与治疗框架\n\n1. 银屑病定义：\n银屑病是一种慢性、免疫介导的炎症性皮肤病，不只是皮肤表面的红斑和鳞屑。\n\n2. 主要治疗方法：\n外用药、光疗、传统系统治疗、生物制剂/小分子药物。\n\n3. 关于 UV 光疗：\n光疗是标准治疗之一，风险需要监测，但不能把我的研究价值主要建立在“减少 UV 危害”上。\n\n4. 更稳的研究价值：\n预测局部皮损进展可以用于疾病活动性监测、早期风险识别、个体化随访和治疗调整。"
+      },
+      {
+        day: 2,
+        title: "Day 2：AI in Psoriasis 总览",
+        time: "3 小时",
+        goal: "通过两篇核心综述建立全局地图：AI 在银屑病中主要做诊断、分割、严重度、治疗反应和 PsA/共病风险。",
+        order: papers.filter(p => p.day === 2).map(p => ({label:`${p.id}. ${p.author} ${p.year}: ${p.title}`, url:p.url, note:p.why})),
+        tasks: [
+          "把 AI 应用分成 5 类：诊断、分割、严重度、治疗反应、PsA/共病风险。",
+          "找出哪一类和你的题目最接近，哪一类只是背景。",
+          "写出“泛泛 AI in psoriasis 综述已经有人做过”的证据。",
+          "写出你的综述必须更聚焦的原因。"
+        ],
+        template: "Day 2 输出：AI 研究地图\n\n1. 当前 AI + 银屑病主要方向：\n诊断/分类；皮损分割；PASI/BSA/严重度评估；治疗反应预测；PsA/共病风险预测。\n\n2. 已有综述说明：\nBarlow 2024 和 Liu 2023 已经覆盖了广义 AI in psoriasis。\n\n3. 我的研究空白：\n现有研究大多评估当前状态，较少预测同一皮损未来是否扩展。\n\n4. 题目收窄：\nAI-based prediction of local psoriasis lesion progression using longitudinal imaging and perilesional biomarkers."
+      },
+      {
+        day: 3,
+        title: "Day 3：Schaap 核心论文与研究价值判断",
+        time: "3-4 小时",
+        goal: "精读 Schaap 2022 和 Chizari 2021，把你的研究从“预测扩散区域”改写成“局部进展风险预测”。",
+        order: papers.filter(p => p.day === 3).map(p => ({label:`${p.id}. ${p.author} ${p.year}: ${p.title}`, url:p.url, note:p.why})),
+        tasks: [
+          "记录 Schaap 的数据结构：week 0/2/4/6/8、LSCI、照片、皮损面积结局。",
+          "记录 Schaap 的关键发现：perilesional perfusion 和 inhomogeneity 预测扩展。",
+          "写明 Schaap 数据目前不能直接公开下载。",
+          "完成一段 150-200 字的医学价值判断。"
+        ],
+        template: "Day 3 输出：医学价值判断\n\nSchaap et al. 2022 是目前最接近本课题的研究。该研究使用 HAPI/LSCI 和临床照片，在 week 0, 2, 4, 6, 8 追踪不稳定斑块型银屑病皮损，并将两周后皮损表面积变化分为 increased/stable/decreased。结果显示，皮损周围灌注升高和灌注不均匀性与两周后皮损扩展有关。\n\n因此，本课题的医学价值不应主要表述为减少 UV 光疗危害，而应表述为通过纵向影像和皮损周围生物标志物预测局部进展风险，从而支持动态监测、个体化随访、治疗调整和远程慢病管理。"
+      },
+      {
+        day: 4,
+        title: "Day 4：综述论文矩阵",
+        time: "3 小时",
+        goal: "读完综述组文献，明确哪些综述已经存在、你的综述不能写得太泛。",
+        order: papers.filter(p => p.day === 4).map(p => ({label:`${p.id}. ${p.author} ${p.year}: ${p.title}`, url:p.url, note:p.why})),
+        tasks: [
+          "在文献矩阵里给每篇 review 加一句自己的判断。",
+          "标出 3 篇最该引用的综述：Barlow、Li、McMullen。",
+          "写出已有综述覆盖了什么。",
+          "写出你的综述要避开的重复点。"
+        ],
+        template: "Day 4 输出：综述空白判断\n\n已有综述已经覆盖广义 AI in psoriasis、图像分析、严重度预测和治疗相关机器学习。因此，我不适合写一个泛泛的 AI in psoriasis review。\n\n可行的新综述角度是：\nAI-based prediction of psoriasis lesion progression: from severity assessment to lesion-level expansion forecasting.\n\n这个角度的核心空白是：已有 AI 多数用于当前状态评估，而不是预测同一皮损未来的局部进展。"
+      },
+      {
+        day: 5,
+        title: "Day 5：诊断、分割与面积评估",
+        time: "3 小时",
+        goal: "理解图像 AI 的基础流程：图片输入、医生标签、预处理、分类/分割、性能评估，以及它和你题目的距离。",
+        order: papers.filter(p => p.day === 5).map(p => ({label:`${p.id}. ${p.author} ${p.year}: ${p.title}`, url:p.url, note:p.why})),
+        tasks: [
+          "把诊断分类和皮损扩展预测区分开。",
+          "记录至少 2 个模型常见问题：数据小、单中心、外部验证不足、肤色偏倚。",
+          "提取 Meienberger 2020 对面积评估的启发。",
+          "写出为什么分割/面积评估是进展预测的前置步骤。"
+        ],
+        template: "Day 5 输出：图像 AI 基础流程\n\n现有图像 AI 多数解决诊断分类或当前面积/严重度评估问题。典型流程是：收集图像，医生标注标签或边界，预处理和数据增强，训练 CNN/ViT/U-Net 等模型，最后用 AUC、accuracy、Dice、MAE 等指标评估。\n\n这些研究对我的启发是：如果要预测皮损扩展，必须先能稳定识别/分割皮损，并量化面积变化。但诊断模型本身不能回答未来是否扩展。"
+      },
+      {
+        day: 6,
+        title: "Day 6：严重度、PASI/BSA 与影像生物标志物",
+        time: "4 小时",
+        goal: "精读严重度/评分自动化论文，明确这类研究已经成熟到什么程度，以及为什么仍然不是你的完整题目。",
+        order: papers.filter(p => p.day === 6).map(p => ({label:`${p.id}. ${p.author} ${p.year}: ${p.title}`, url:p.url, note:p.why})),
+        tasks: [
+          "记录 SkinTeller 的数据规模和任务定义。",
+          "区分 PASI/BSA 当前评分与未来进展预测。",
+          "记录 RSOM/LSCI 这类影像生物标志物对你的启发。",
+          "写一段：严重度评估不是终点，而是进展预测的基础。"
+        ],
+        template: "Day 6 输出：严重度 AI 与我的题目关系\n\n严重度评估研究已经比较活跃，代表性工作包括 SkinTeller、Single-Shot PASI 和自动 NAPSI 评分。这些研究证明 AI 可以从图像中估计当前疾病负担。\n\n但我的题目不应停留在当前 PASI/BSA 估计，而应进一步关注未来局部进展。严重度、面积和影像生物标志物可以作为输入特征或中间变量，为 lesion-level progression prediction 服务。"
+      },
+      {
+        day: 7,
+        title: "Day 7：治疗反应、复发与 PsA 风险预测",
+        time: "3-4 小时",
+        goal: "理解 AI 为什么在治疗反应/风险分层中更容易有医学价值，并把这个逻辑迁移到你的局部进展预测。",
+        order: papers.filter(p => p.day === 7).map(p => ({label:`${p.id}. ${p.author} ${p.year}: ${p.title}`, url:p.url, note:p.why})),
+        tasks: [
+          "记录治疗反应预测的输入：临床变量、药物、PASI、组学/蛋白。",
+          "记录 PsA 预测为什么有临床行动点：筛查、转诊、随访。",
+          "写出你课题的行动点：复诊、治疗调整、远程监测、局部治疗策略。",
+          "在矩阵中给 treatment/PsA 类论文标注是否和你题目直接相关。"
+        ],
+        template: "Day 7 输出：预测研究的临床行动点\n\n治疗反应和 PsA 风险预测之所以有价值，是因为预测结果可以影响临床行动，例如选择药物、提前筛查、调整随访频率或进行转诊。\n\n我的局部皮损进展预测也必须强调行动点：提前识别高风险皮损，建议更早复诊，辅助医生判断是否加强局部治疗或调整系统治疗，并为远程慢病管理提供依据。"
+      },
+      {
+        day: 8,
+        title: "Day 8：公开数据库与 Schaap 数据申请",
+        time: "2-3 小时",
+        goal: "明确哪些数据能公开使用，哪些数据不能支撑扩展预测，并准备给 Schaap 团队的数据申请邮件。",
+        order: [
+          {label:"SCIN 数据集", url:sources.scin, note:"开放皮肤病图像数据，可用于了解真实世界图像，但不是纵向扩展数据。"},
+          {label:"Fitzpatrick17k", url:sources.fitz, note:"多肤色皮肤病图片，可用于公平性/诊断背景，但无纵向皮损扩展标签。"},
+          {label:"DDI", url:sources.ddi, note:"多肤色、病理确认数据，适合公平性评估，不适合扩展预测。"},
+          {label:"DermNet dataset", url:sources.dermnet, note:"大规模皮肤病图片资源，但需要许可，且不是纵向银屑病数据。"},
+          {label:"Chizari Figshare", url:sources.chizariFigshare, note:"LSCI 相关图表数据，不是 Schaap 2022 核心扩展数据。"}
+        ],
+        tasks: [
+          "把公开数据库分成：可用于背景/预训练、不可用于真实扩展预测。",
+          "写出为什么目前不能直接训练真正的扩展预测模型。",
+          "完成 Schaap 数据申请邮件的第一版。",
+          "列出如果拿不到 Schaap 数据的替代方案。"
+        ],
+        template: "Day 8 输出：数据可行性判断\n\n目前没有找到公开的“同一银屑病皮损多时间点照片 + LSCI 灌注图 + 边界标注 + 扩展标签”数据集。SCIN、Fitzpatrick17k、DDI、DermNet 等可用于图像 AI 背景、诊断或公平性讨论，但不能直接回答未来扩展预测。\n\nSchaap et al. 2022 的核心数据目前看起来不能公开下载，下一步应给作者发送数据申请邮件。如果无法获得数据，本阶段应定位为 focused literature review + methodological framework，而不是声称完成真实模型训练。"
+      },
+      {
+        day: 9,
+        title: "Day 9：方法框架设计",
+        time: "3 小时",
+        goal: "把文献读到的方法转化成你自己的 proposal pipeline，但不写代码、不虚构数据。",
+        order: [
+          {label:"回看 Schaap 2022", url:"https://pubmed.ncbi.nlm.nih.gov/34619003/", note:"把 week 0/2/4/6/8、LSCI、照片、两周结局变成你的理想数据结构。"},
+          {label:"回看 Meienberger 2020", url:"https://pubmed.ncbi.nlm.nih.gov/31594034/", note:"把面积分割作为第一步。"},
+          {label:"回看 Huang 2023 SkinTeller", url:"https://pubmed.ncbi.nlm.nih.gov/36927843/", note:"学习真实世界 app/临床使用的表述方式。"}
+        ],
+        tasks: [
+          "画出 pipeline：输入、预处理、分割、特征、预测、临床输出。",
+          "定义目标变量：未来 2 周 increased/stable/decreased。",
+          "定义输入变量：RGB、边界形态、perilesional biomarkers、治疗状态。",
+          "写出不做真实建模的原因和未来数据需求。"
+        ],
+        template: "Day 9 输出：方法框架\n\nProposed framework:\n1. Input: longitudinal RGB clinical photographs, LSCI perfusion maps, lesion boundary annotations and treatment status.\n2. Preprocessing: image quality control, registration across visits, lesion segmentation and perilesional region definition.\n3. Feature extraction: lesion area, boundary morphology, color/texture features, perilesional perfusion and perfusion inhomogeneity.\n4. Prediction target: two-week lesion outcome, classified as increased, stable or decreased.\n5. Modeling plan: start with interpretable models such as logistic/ordinal regression and random forest; only use deep learning if enough longitudinal data become available.\n6. Clinical output: local progression risk to support monitoring, follow-up timing and treatment adjustment.\n\nCurrent limitation: no public dataset currently supports full validation."
+      },
+      {
+        day: 10,
+        title: "Day 10：整合成可以交给老师的材料",
+        time: "3 小时",
+        goal: "把前 9 天内容压缩成一页 proposal memo、一个文献 gap 段落、一个数据申请计划。",
+        order: [
+          {label:"文献矩阵 Excel", url:"../outputs/psoriasis_ai_stage1/psoriasis_ai_literature_matrix_stage1.xlsx", note:"检查 Core 文献是否都已读完并标注。"},
+          {label:"第一阶段工作流程文档", url:"../psoriasis_ai_stage1_workflow_and_literature_review.md", note:"把已有总结和这 10 天输出合并。"}
+        ],
+        tasks: [
+          "完成 1 页 proposal memo。",
+          "完成 1 段 literature gap。",
+          "完成 1 段 clinical value。",
+          "完成 Schaap 数据申请邮件。",
+          "列出下一阶段选择：写综述/写 proposal/申请数据后做 pilot。"
+        ],
+        template: "Day 10 输出：交给老师的一页 memo\n\n题目：基于纵向临床影像和皮损周围生物标志物的银屑病局部进展预测：综述与方法框架\n\nBackground:\n银屑病是慢性免疫介导的炎症性疾病，治疗和管理需要长期动态监测。\n\nCurrent evidence:\n现有 AI 研究主要集中在诊断、分割、严重度/PASI/BSA 评估、治疗反应和 PsA 风险预测。Schaap et al. 2022 是少数直接研究皮损未来扩展的工作。\n\nGap:\n现有图像 AI 多数评估当前疾病状态，缺少 lesion-level longitudinal progression prediction。\n\nClinical value:\n预测局部进展可支持早期风险识别、复诊时间安排、治疗调整和远程慢病管理，而不是单纯为了减少 UV 光疗伤害。\n\nNext step:\n第一阶段先完成 focused literature review 和 methodological framework，同时向 Schaap 团队申请去标识化纵向数据。"
+      }
+    ];
+
+    const stateKey = "psoriasis_ai_10_day_guide_state_v1";
+    let activeDay = 1;
+    let state = JSON.parse(localStorage.getItem(stateKey) || "{}");
+
+    const dayList = document.getElementById("dayList");
+    const dayTitle = document.getElementById("dayTitle");
+    const dayGoal = document.getElementById("dayGoal");
+    const dayTime = document.getElementById("dayTime");
+    const taskCount = document.getElementById("taskCount");
+    const readingOrder = document.getElementById("readingOrder");
+    const taskList = document.getElementById("taskList");
+    const templateBox = document.getElementById("templateBox");
+    const dailyPapers = document.getElementById("dailyPapers");
+    const libraryPapers = document.getElementById("libraryPapers");
+    const progressBar = document.getElementById("progressBar");
+    const progressLabel = document.getElementById("progressLabel");
+    const paperSearch = document.getElementById("paperSearch");
+    const paperFilter = document.getElementById("paperFilter");
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    function priorityClass(priority) {
+      return priority === "Core" ? "core" : priority === "High" ? "high" : "medium";
+    }
+
+    function saveState() {
+      localStorage.setItem(stateKey, JSON.stringify(state));
+      renderProgress();
+    }
+
+    function taskKey(day, index) {
+      return `day-${day}-task-${index}`;
+    }
+
+    function allTaskKeys() {
+      return days.flatMap(d => d.tasks.map((_, i) => taskKey(d.day, i)));
+    }
+
+    function renderProgress() {
+      const keys = allTaskKeys();
+      const done = keys.filter(k => state[k]).length;
+      const pct = keys.length ? Math.round(done / keys.length * 100) : 0;
+      progressBar.style.width = `${pct}%`;
+      progressLabel.textContent = `${done} / ${keys.length} 已完成`;
+    }
+
+    function renderDayButtons() {
+      dayList.innerHTML = days.map(d => `
+        <button class="day-btn ${d.day === activeDay ? "active" : ""}" data-day="${d.day}">
+          <strong>Day ${d.day}</strong>
+          <span>${escapeHtml(d.title.replace(/^Day \\d+：/, ""))}</span>
+        </button>
+      `).join("");
+      dayList.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          activeDay = Number(btn.dataset.day);
+          render();
+        });
+      });
+    }
+
+    function renderOrder(items) {
+      return `
+        <table class="mini-table">
+          <thead><tr><th style="width:38%">阅读入口</th><th>精读目标</th></tr></thead>
+          <tbody>
+            ${items.map(item => `
+              <tr>
+                <td><a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(item.label)}</a></td>
+                <td>${escapeHtml(item.note)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderTasks(day) {
+      taskList.innerHTML = day.tasks.map((task, i) => {
+        const key = taskKey(day.day, i);
+        return `
+          <div class="check-item">
+            <input type="checkbox" id="${key}" ${state[key] ? "checked" : ""} />
+            <label for="${key}">${escapeHtml(task)}</label>
+          </div>
+        `;
+      }).join("");
+      taskList.querySelectorAll("input").forEach(input => {
+        input.addEventListener("change", () => {
+          state[input.id] = input.checked;
+          saveState();
+          renderTaskCount(day);
+        });
+      });
+    }
+
+    function renderTaskCount(day) {
+      const done = day.tasks.filter((_, i) => state[taskKey(day.day, i)]).length;
+      taskCount.textContent = `${done}/${day.tasks.length}`;
+    }
+
+    function paperCard(paper) {
+      return `
+        <article class="paper">
+          <div class="paper-top">
+            <span class="pill ${priorityClass(paper.priority)}">${paper.priority}</span>
+            <span class="pill">${escapeHtml(paper.category)}</span>
+            <span class="pill">${paper.year}</span>
+          </div>
+          <h4>${paper.id}. ${escapeHtml(paper.author)}：${escapeHtml(paper.title)}</h4>
+          <p>${escapeHtml(paper.journal)}。${escapeHtml(paper.why)}</p>
+          <div class="paper-actions">
+            <a class="read-link" href="${paper.url}" target="_blank" rel="noopener">阅读 PubMed/DOI</a>
+            <button data-copy="${paper.id}">复制引用信息</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderDailyPapers(day) {
+      const dayPapers = papers.filter(p => p.day === day.day);
+      paperCount.textContent = `${dayPapers.length} 项`;
+      dailyPapers.innerHTML = dayPapers.length
+        ? dayPapers.map(paperCard).join("")
+        : `<div class="callout">今天主要整理输出，不新增论文精读。</div>`;
+    }
+
+    function renderLibrary() {
+      const query = paperSearch.value.trim().toLowerCase();
+      const filter = paperFilter.value;
+      const filtered = papers.filter(p => {
+        const hay = `${p.category} ${p.priority} ${p.year} ${p.author} ${p.title} ${p.journal} ${p.why}`.toLowerCase();
+        const matchQuery = !query || hay.includes(query);
+        const matchFilter = filter === "all" || p.category.includes(filter);
+        return matchQuery && matchFilter;
+      });
+      libraryPapers.innerHTML = filtered.slice(0, 12).map(paperCard).join("") || `<div class="callout warning">没有匹配结果。</div>`;
+      libraryPapers.querySelectorAll("button[data-copy]").forEach(btn => {
+        btn.addEventListener("click", () => copyPaper(Number(btn.dataset.copy)));
+      });
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.left = "-9999px";
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+    }
+
+    async function copyPaper(id) {
+      const p = papers.find(item => item.id === id);
+      const text = `${p.author} (${p.year}). ${p.title}. ${p.journal}. ${p.url}`;
+      await copyText(text);
+    }
+
+    function bindPaperCopyButtons() {
+      document.querySelectorAll("button[data-copy]").forEach(btn => {
+        btn.addEventListener("click", () => copyPaper(Number(btn.dataset.copy)));
+      });
+    }
+
+    function render() {
+      const day = days.find(d => d.day === activeDay);
+      dayTitle.textContent = day.title;
+      dayGoal.textContent = day.goal;
+      dayTime.textContent = day.time;
+      readingOrder.innerHTML = renderOrder(day.order);
+      templateBox.value = day.template;
+      renderDayButtons();
+      renderTasks(day);
+      renderTaskCount(day);
+      renderDailyPapers(day);
+      renderLibrary();
+      bindPaperCopyButtons();
+      renderProgress();
+    }
+
+    document.getElementById("copyTemplateBtn").addEventListener("click", async () => {
+      await copyText(templateBox.value);
+      const copyStatus = document.getElementById("copyStatus");
+      copyStatus.textContent = "已复制";
+      setTimeout(() => copyStatus.textContent = "", 1200);
+    });
+
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      const done = allTaskKeys().filter(k => state[k]);
+      const lines = days.map(d => {
+        const count = d.tasks.filter((_, i) => state[taskKey(d.day, i)]).length;
+        return `Day ${d.day}: ${count}/${d.tasks.length} - ${d.title}`;
+      });
+      const blob = new Blob([`银屑病 AI 研究 10 天进度\\n\\n${lines.join("\\n")}\\n\\n已完成任务键：\\n${done.join("\\n")}`], {type:"text/plain"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "psoriasis_ai_10_day_progress.txt";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (!confirm("确认清空所有勾选进度？")) return;
+      state = {};
+      saveState();
+      render();
+    });
+
+    paperSearch.addEventListener("input", renderLibrary);
+    paperFilter.addEventListener("change", renderLibrary);
+
+    render();
+  </script>
+</body>
+</html>
