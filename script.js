@@ -429,8 +429,9 @@ detailDialog.addEventListener('click', (event) => {
   if (event.target === detailDialog) closeDetail();
 });
 
+const DEFAULT_PUBLIC_AGENT_API_BASE = 'https://personal-portfolio-o2ed.onrender.com';
 const configuredAgentApiBase = window.PORTFOLIO_AGENT_API_BASE || '';
-const agentApiBase = configuredAgentApiBase || (window.location.protocol === 'file:' ? 'http://127.0.0.1:8765' : '');
+const agentApiBase = configuredAgentApiBase || (window.location.protocol === 'file:' ? 'http://127.0.0.1:8765' : DEFAULT_PUBLIC_AGENT_API_BASE);
 const isPublicAgentPage = window.location.protocol !== 'file:';
 const canManageAgentDocs = !isPublicAgentPage || window.PORTFOLIO_AGENT_ADMIN === true;
 const agentAdminToken = window.PORTFOLIO_AGENT_ADMIN_TOKEN || '';
@@ -453,18 +454,31 @@ async function agentRequest(path, options = {}) {
   if (!agentApiBase) {
     throw new Error('公网智能体后端尚未接入');
   }
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), options.timeout || 65000);
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {})
   };
   if (agentAdminToken) headers['X-Admin-Token'] = agentAdminToken;
-  const response = await fetch(`${agentApiBase}${path}`, {
-    ...options,
-    headers
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || '请求失败');
-  return data;
+  try {
+    const response = await fetch(`${agentApiBase}${path}`, {
+      ...options,
+      headers,
+      mode: 'cors',
+      signal: controller.signal
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '请求失败');
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('智能体响应超时，请稍后再试。Render 免费实例偶尔需要唤醒。');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 function addAgentMessage(role, text, sources = []) {
@@ -563,7 +577,7 @@ agentChatForm?.addEventListener('submit', async (event) => {
     pending.remove();
     const hint = window.location.protocol === 'file:'
       ? '请确认 personal-rag-agent/start.command 对应的 Terminal 窗口正在运行。'
-      : '公网 Agent 后端还没有接入，部署完成后这里会自动变成真实问答。';
+      : `我已经尝试连接 ${agentApiBase}。如果刚打开页面就失败，请刷新一次；Render 免费实例偶尔需要几十秒唤醒。`;
     addAgentMessage('assistant', `暂时连不上智能体服务：${error.message}\n${hint}`);
     setAgentStatus('未连接');
   }
